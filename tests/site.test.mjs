@@ -10,7 +10,7 @@ import worker from "../dist/server/index.js";
 
 test("新版分类、平台与省钱步骤保持完整", () => {
   assert.deepEqual(categories.map((item) => item.id), ["food", "local", "shopping"]);
-  assert.equal(platforms.length, 10);
+  assert.equal(platforms.length, 12);
   assert.equal(categories.some((item) => item.id === "travel"), false);
   assert.equal(platforms.some((item) => item.category === "travel"), false);
   assert.equal(
@@ -31,7 +31,10 @@ test("新版分类、平台与省钱步骤保持完整", () => {
 
   const requestedLinkedIds = [
     "meituan-allowance",
+    "jd-waimai",
+    "alipay-flash-sale",
     "alipay-special-deals",
+    "jd-dine-in",
     "meituan-group-buy",
     "taobao-signin",
     "pinduoduo",
@@ -43,6 +46,24 @@ test("新版分类、平台与省钱步骤保持完整", () => {
     }),
     true,
   );
+
+  const meituanHome = "https://m.dianping.com/awp/hfe/block-page/call-native/meituan.html";
+  assert.equal(platforms.find((item) => item.id === "meituan-allowance")?.href, meituanHome);
+  assert.equal(platforms.find((item) => item.id === "meituan-group-buy")?.href, meituanHome);
+  assert.equal(
+    platforms.find((item) => item.id === "alipay-special-deals")?.href,
+    "https://ur.alipay.com/_4vC30z2bFQz5m93B6Gbii1",
+  );
+  assert.equal(
+    platforms.find((item) => item.id === "alipay-flash-sale")?.href,
+    "https://ur.alipay.com/_33FPR0PIKSD6LrOEXwNxml",
+  );
+
+  for (const id of ["jd-waimai", "jd-dine-in"]) {
+    const href = platforms.find((item) => item.id === id)?.href;
+    assert.equal(new URL(href).hostname, "hour.jd.com");
+    assert.doesNotMatch(href, /utm_|shareid|[?&]gx[d]?=/i);
+  }
 });
 
 test("安装提示只在合适的运行环境显示", () => {
