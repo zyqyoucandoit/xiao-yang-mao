@@ -161,34 +161,36 @@ export const platforms = [
     category: "shopping",
     name: "淘宝红包签到",
     monogram: "签",
-    description: "每天先签到，使用前检查期限和门槛",
-    href: "https://market.m.taobao.com/app/tmall-def/daily-welfare/pages/taxation?wh_weex=true",
-    actionLabel: "打开淘宝红包签到",
+    description: "打开截图中的淘宝首页，再点“红包签到”",
+    href: "https://m.taobao.com/",
+    appHref: "taobao://m.taobao.com",
+    actionLabel: "打开淘宝 App 首页",
     accent: "#ffe2c9",
     tips: [
-      "按钮会直接打开官方红包签到页；也可以在截图所示淘宝首页点“红包签到”。",
+      "点击按钮直接唤起淘宝 App 首页，再点截图中的“红包签到”。",
       "完成当天签到；有连续签到或浏览任务时，只做你愿意完成的任务。",
       "领取后查看红包有效期、使用门槛和适用品类。",
       "下单结算前确认红包已经勾选，不要为了凑门槛多买不需要的商品。",
     ],
-    notice: "为避免普通首页无法稳定唤起 App，此处保留官方签到直达页；规则会按账号变化且通常有较短有效期。",
+    notice: "淘宝可能恢复上次打开的位置，无法保证每次都停在“推荐”标签；若未安装或没有成功打开 App，请点卡片下方的淘宝网页版入口。",
   },
   {
     id: "taobao-seckill",
     category: "shopping",
     name: "淘宝秒杀",
     monogram: "秒",
-    description: "看准场次，先选规格，再核对是不是最低实付",
-    href: "https://web.m.taobao.com/app/ltao-fe/tbmx-pc-page/home",
-    actionLabel: "打开淘宝秒杀官方页面",
+    description: "打开淘宝首页，再从“淘宝秒杀”进入当前场次",
+    href: "https://m.taobao.com/",
+    appHref: "taobao://m.taobao.com",
+    actionLabel: "打开淘宝 App 首页",
     accent: "#ffd8c4",
     tips: [
-      "进入淘宝 App 首页“淘宝秒杀”，查看品牌秒杀、实惠生活或省钱神券。",
+      "点击按钮唤起淘宝 App 首页，再点截图中的“淘宝秒杀”。",
       "先确认开抢场次，收藏商品或设置官方提醒。",
       "开抢前选好规格、收货地址和支付方式，并领取页面可用的店铺券。",
       "结算时核对秒杀价、运费和退换规则；价格不合适就不抢。",
     ],
-    notice: "库存和场次实时变化，不使用代抢、脚本或来路不明的口令链接。",
+    notice: "淘宝可能恢复上次打开的位置；库存和场次实时变化，不使用代抢、脚本或来路不明的口令链接。",
   },
   {
     id: "jd-seckill",
@@ -271,6 +273,12 @@ export function getHttpsHref(value) {
   } catch {
     return null;
   }
+}
+
+const TRUSTED_APP_HREFS = new Set(["taobao://m.taobao.com"]);
+
+export function getTrustedAppHref(value) {
+  return typeof value === "string" && TRUSTED_APP_HREFS.has(value) ? value : null;
 }
 
 export function getInstallHintState({ isSecure, hasInstallPrompt, isIosSafari, isStandalone }) {

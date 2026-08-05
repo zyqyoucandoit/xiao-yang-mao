@@ -4,6 +4,7 @@ import {
   categories,
   getHttpsHref,
   getInstallHintState,
+  getTrustedAppHref,
   platforms,
 } from "../platforms.js";
 import worker from "../dist/server/index.js";
@@ -79,6 +80,12 @@ test("新版分类、平台与省钱步骤保持完整", () => {
     jdTrial?.code,
     "14:/【京东试用】天天0元抢大牌试用，↷Jℹ️ng◁東！M6Md68En03Q0！ CA1565",
   );
+
+  for (const id of ["taobao-signin", "taobao-seckill"]) {
+    const item = platforms.find((platform) => platform.id === id);
+    assert.equal(item?.href, "https://m.taobao.com/");
+    assert.equal(item?.appHref, "taobao://m.taobao.com");
+  }
 });
 
 test("安装提示只在合适的运行环境显示", () => {
@@ -126,6 +133,9 @@ test("只接受无凭据的绝对 HTTPS 链接", () => {
   assert.equal(getHttpsHref("javascript:alert(1)"), null);
   assert.equal(getHttpsHref("https://user:pass@example.com"), null);
   assert.equal(getHttpsHref("not-a-url"), null);
+  assert.equal(getTrustedAppHref("taobao://m.taobao.com"), "taobao://m.taobao.com");
+  assert.equal(getTrustedAppHref("taobao://evil.example"), null);
+  assert.equal(getTrustedAppHref("javascript:alert(1)"), null);
 });
 
 test("站点外壳与 PWA 资源可以由 Worker 提供", async () => {
@@ -164,6 +174,10 @@ test("站点外壳与 PWA 资源可以由 Worker 提供", async () => {
   assert.match(appSource, /action\.target = "_blank"/);
   assert.match(appSource, /action\.rel = "noopener noreferrer"/);
   assert.match(appSource, /navigator\.clipboard\?\.writeText/);
+  assert.match(appSource, /window\.location\.href = appHref/);
+  assert.match(appSource, /event\.preventDefault\(\)/);
+  assert.match(appSource, /未打开？访问淘宝网页版/);
+  assert.doesNotMatch(appSource, /visibilitychange/);
 
   const serviceWorker = await (
     await worker.fetch(new Request("https://example.test/sw.js"))

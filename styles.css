@@ -454,7 +454,8 @@ h1 {
 }
 
 .platform-card__action--link,
-.platform-card__action--copy {
+.platform-card__action--copy,
+.platform-card__action--app {
   border-color: #e3b98e;
   background: var(--primary-soft);
   color: #8b3f05;
@@ -462,13 +463,29 @@ h1 {
   transition: background 150ms ease, transform 150ms ease;
 }
 
-.platform-card__action--copy {
+.platform-card__action--copy,
+.platform-card__action--app {
   width: 100%;
   cursor: pointer;
 }
 
+.platform-card__fallback {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  color: #765d50;
+  font-size: 11px;
+  font-weight: 650;
+  text-align: center;
+  text-decoration: underline;
+  text-decoration-color: rgba(118, 93, 80, 0.35);
+  text-underline-offset: 3px;
+}
+
 .platform-card__action--link:hover,
-.platform-card__action--copy:hover {
+.platform-card__action--copy:hover,
+.platform-card__action--app:hover {
   background: #fbd8a8;
   transform: translateY(-1px);
 }
@@ -546,6 +563,8 @@ h1 {
 .category-nav__link:focus-visible,
 .platform-card__action--link:focus-visible,
 .platform-card__action--copy:focus-visible,
+.platform-card__action--app:focus-visible,
+.platform-card__fallback:focus-visible,
 .saving-guide__summary:focus-visible {
   outline: 3px solid #8b3f05;
   outline-offset: 3px;

@@ -1,4 +1,10 @@
-import { categories, getHttpsHref, getInstallHintState, platforms } from "/platforms.js";
+import {
+  categories,
+  getHttpsHref,
+  getInstallHintState,
+  getTrustedAppHref,
+  platforms,
+} from "/platforms.js";
 
 const categoryNav = document.querySelector("#category-nav");
 const main = document.querySelector("#main-content");
@@ -10,10 +16,15 @@ function makeTextElement(tagName, className, text) {
   return element;
 }
 
+function openTrustedApp(appHref) {
+  window.location.href = appHref;
+}
+
 function renderPlatformCard(platform) {
   const href = getHttpsHref(platform.href);
+  const appHref = href ? getTrustedAppHref(platform.appHref) : null;
   const code = typeof platform.code === "string" && platform.code.trim() ? platform.code : null;
-  const isReady = Boolean(href || code);
+  const isReady = Boolean(appHref || href || code);
   const card = document.createElement("article");
 
   card.className = `platform-card${isReady ? " platform-card--ready" : " platform-card--pending"}`;
@@ -28,7 +39,7 @@ function renderPlatformCard(platform) {
   const status = makeTextElement(
     "span",
     `platform-card__status${isReady ? " platform-card__status--ready" : ""}`,
-    href ? "官方入口" : code ? "可复制口令" : "App 内入口",
+    appHref ? "打开 App" : href ? "官方入口" : code ? "可复制口令" : "App 内入口",
   );
   cardTop.append(icon, status);
 
@@ -39,11 +50,19 @@ function renderPlatformCard(platform) {
   copy.append(name, makeTextElement("span", "platform-card__description", platform.description));
 
   const action = makeTextElement(
-    href ? "a" : code ? "button" : "span",
-    `platform-card__action${href ? " platform-card__action--link" : code ? " platform-card__action--copy" : ""}`,
-    `${platform.actionLabel}${href ? " →" : ""}`,
+    appHref || href ? "a" : code ? "button" : "span",
+    `platform-card__action${appHref ? " platform-card__action--app" : href ? " platform-card__action--link" : code ? " platform-card__action--copy" : ""}`,
+    `${platform.actionLabel}${href && !appHref ? " →" : ""}`,
   );
-  if (href) {
+  if (appHref) {
+    action.href = href;
+    action.setAttribute("aria-label", platform.actionLabel);
+    action.addEventListener("click", (event) => {
+      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      event.preventDefault();
+      openTrustedApp(appHref);
+    });
+  } else if (href) {
     action.href = href;
     action.target = "_blank";
     action.rel = "noopener noreferrer";
@@ -65,6 +84,19 @@ function renderPlatformCard(platform) {
     });
   }
 
+  let webFallback = null;
+  if (appHref && href) {
+    webFallback = makeTextElement(
+      "a",
+      "platform-card__fallback",
+      "未打开？访问淘宝网页版",
+    );
+    webFallback.href = href;
+    webFallback.target = "_blank";
+    webFallback.rel = "noopener noreferrer";
+    webFallback.setAttribute("aria-label", "未能打开淘宝 App，改为在新窗口访问淘宝网页版");
+  }
+
   const guide = document.createElement("details");
   guide.className = "saving-guide";
   const summary = makeTextElement("summary", "saving-guide__summary", "查看省钱步骤");
@@ -76,7 +108,9 @@ function renderPlatformCard(platform) {
   const notice = makeTextElement("p", "saving-guide__notice", platform.notice);
   guide.append(summary, steps, notice);
 
-  card.append(cardTop, copy, action, guide);
+  card.append(cardTop, copy, action);
+  if (webFallback) card.append(webFallback);
+  card.append(guide);
   return card;
 }
 
