@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#b45309" />
+    <meta name="description" content="把外卖、购物和出行优惠入口收在一起。" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="小羊毛" />
+    <title>小羊毛｜常用优惠入口</title>
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" href="/icons/icon-192.png" sizes="192x192" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" sizes="180x180" />
+    <link rel="stylesheet" href="/styles.css" />
+    <script type="module" src="/app.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">跳到主要内容</a>
+
+    <header class="hero">
+      <div class="hero__glow hero__glow--one" aria-hidden="true"></div>
+      <div class="hero__glow hero__glow--two" aria-hidden="true"></div>
+      <div class="page-shell hero__inner">
+        <div class="hero__topline">
+          <span class="eyebrow">我的优惠口袋</span>
+          <span class="install-badge" id="install-badge" hidden></span>
+        </div>
+
+        <div class="hero__main">
+          <div class="sheep-mark" aria-hidden="true">
+            <span class="sheep-mark__ear sheep-mark__ear--left"></span>
+            <span class="sheep-mark__ear sheep-mark__ear--right"></span>
+            <span class="sheep-mark__wool sheep-mark__wool--one"></span>
+            <span class="sheep-mark__wool sheep-mark__wool--two"></span>
+            <span class="sheep-mark__wool sheep-mark__wool--three"></span>
+            <span class="sheep-mark__face">
+              <span class="sheep-mark__eye sheep-mark__eye--left"></span>
+              <span class="sheep-mark__eye sheep-mark__eye--right"></span>
+              <span class="sheep-mark__nose"></span>
+            </span>
+          </div>
+          <div>
+            <p class="hero__kicker">常用优惠，一点就到</p>
+            <h1>小羊毛</h1>
+            <p class="hero__copy">把零散的优惠入口收进一个口袋，想用的时候不用再到处找。</p>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <nav class="category-nav" aria-label="优惠分类">
+      <div class="page-shell category-nav__scroller" id="category-nav"></div>
+    </nav>
+
+    <div class="page-shell">
+      <aside class="status-note" id="entry-note">
+        <span class="status-note__icon" aria-hidden="true">⌁</span>
+        <span><strong>入口正在整理</strong> 标记“待添加链接”的卡片暂时不会跳转。</span>
+      </aside>
+    </div>
+
+    <main class="page-shell content" id="main-content" tabindex="-1"></main>
+
+    <noscript>
+      <p class="page-shell noscript-note">请启用浏览器 JavaScript 以显示平台入口。</p>
+    </noscript>
+
+    <footer class="footer">
+      <div class="page-shell footer__inner">
+        <div class="footer__brand"><span aria-hidden="true">☁</span> 小羊毛</div>
+        <p>小羊毛仅整理跳转入口，与各平台无隶属或授权关系；优惠内容、领取资格和有效期以目标平台页面为准。</p>
+        <p class="footer__install" id="install-tip" hidden>如浏览器支持，可在手机浏览器菜单中选择“添加到主屏幕”。外部优惠页面仍需联网访问。</p>
+      </div>
+    </footer>
+  </body>
+</html>

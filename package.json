@@ -1,0 +1,16 @@
+{
+  "name": "xiao-yang-mao",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "description": "小羊毛：常用平台优惠入口导航",
+  "scripts": {
+    "dev": "node dev.mjs",
+    "build": "node build.mjs",
+    "start": "node dev.mjs",
+    "test": "node build.mjs && node --test tests/site.test.mjs"
+  },
+  "type": "module"
+}
