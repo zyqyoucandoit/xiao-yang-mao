@@ -10,7 +10,7 @@ import worker from "../dist/server/index.js";
 
 test("新版分类、平台与省钱步骤保持完整", () => {
   assert.deepEqual(categories.map((item) => item.id), ["food", "local", "shopping"]);
-  assert.equal(platforms.length, 12);
+  assert.equal(platforms.length, 14);
   assert.equal(categories.some((item) => item.id === "travel"), false);
   assert.equal(platforms.some((item) => item.category === "travel"), false);
   assert.equal(
@@ -37,6 +37,8 @@ test("新版分类、平台与省钱步骤保持完整", () => {
     "jd-dine-in",
     "meituan-group-buy",
     "taobao-signin",
+    "jd-seckill",
+    "jingxi-goods",
     "pinduoduo",
   ];
   assert.equal(
@@ -64,6 +66,19 @@ test("新版分类、平台与省钱步骤保持完整", () => {
     assert.equal(new URL(href).hostname, "hour.jd.com");
     assert.doesNotMatch(href, /utm_|shareid|[?&]gx[d]?=/i);
   }
+
+  for (const id of ["jd-seckill", "jingxi-goods"]) {
+    const href = platforms.find((item) => item.id === id)?.href;
+    assert.equal(new URL(href).search, "");
+  }
+
+  assert.equal(platforms.some((item) => item.id === "jd-mall"), false);
+  const jdTrial = platforms.find((item) => item.id === "jd-trial");
+  assert.equal(jdTrial?.href, null);
+  assert.equal(
+    jdTrial?.code,
+    "14:/【京东试用】天天0元抢大牌试用，↷Jℹ️ng◁東！M6Md68En03Q0！ CA1565",
+  );
 });
 
 test("安装提示只在合适的运行环境显示", () => {
@@ -148,6 +163,7 @@ test("站点外壳与 PWA 资源可以由 Worker 提供", async () => {
   assert.match(appSource, /document\.createElement\("details"\)/);
   assert.match(appSource, /action\.target = "_blank"/);
   assert.match(appSource, /action\.rel = "noopener noreferrer"/);
+  assert.match(appSource, /navigator\.clipboard\?\.writeText/);
 
   const serviceWorker = await (
     await worker.fetch(new Request("https://example.test/sw.js"))

@@ -1,5 +1,5 @@
-const SHELL_CACHE = "xiaoyangmao-shell-v4";
-const ASSET_CACHE = "xiaoyangmao-assets-v4";
+const SHELL_CACHE = "xiaoyangmao-shell-v5";
+const ASSET_CACHE = "xiaoyangmao-assets-v5";
 const NETWORK_FIRST_ASSETS = new Set([
   "/styles.css",
   "/platforms.js",

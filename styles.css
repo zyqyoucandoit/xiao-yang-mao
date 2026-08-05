@@ -453,7 +453,8 @@ h1 {
   text-align: center;
 }
 
-.platform-card__action--link {
+.platform-card__action--link,
+.platform-card__action--copy {
   border-color: #e3b98e;
   background: var(--primary-soft);
   color: #8b3f05;
@@ -461,7 +462,13 @@ h1 {
   transition: background 150ms ease, transform 150ms ease;
 }
 
-.platform-card__action--link:hover {
+.platform-card__action--copy {
+  width: 100%;
+  cursor: pointer;
+}
+
+.platform-card__action--link:hover,
+.platform-card__action--copy:hover {
   background: #fbd8a8;
   transform: translateY(-1px);
 }
@@ -538,6 +545,7 @@ h1 {
 
 .category-nav__link:focus-visible,
 .platform-card__action--link:focus-visible,
+.platform-card__action--copy:focus-visible,
 .saving-guide__summary:focus-visible {
   outline: 3px solid #8b3f05;
   outline-offset: 3px;

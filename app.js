@@ -12,9 +12,11 @@ function makeTextElement(tagName, className, text) {
 
 function renderPlatformCard(platform) {
   const href = getHttpsHref(platform.href);
+  const code = typeof platform.code === "string" && platform.code.trim() ? platform.code : null;
+  const isReady = Boolean(href || code);
   const card = document.createElement("article");
 
-  card.className = `platform-card${href ? " platform-card--ready" : " platform-card--pending"}`;
+  card.className = `platform-card${isReady ? " platform-card--ready" : " platform-card--pending"}`;
   card.style.setProperty("--card-accent", platform.accent);
   card.setAttribute("aria-labelledby", `${platform.id}-name`);
 
@@ -25,8 +27,8 @@ function renderPlatformCard(platform) {
   icon.setAttribute("aria-hidden", "true");
   const status = makeTextElement(
     "span",
-    `platform-card__status${href ? " platform-card__status--ready" : ""}`,
-    href ? "官方入口" : "App 内入口",
+    `platform-card__status${isReady ? " platform-card__status--ready" : ""}`,
+    href ? "官方入口" : code ? "可复制口令" : "App 内入口",
   );
   cardTop.append(icon, status);
 
@@ -37,8 +39,8 @@ function renderPlatformCard(platform) {
   copy.append(name, makeTextElement("span", "platform-card__description", platform.description));
 
   const action = makeTextElement(
-    href ? "a" : "span",
-    `platform-card__action${href ? " platform-card__action--link" : ""}`,
+    href ? "a" : code ? "button" : "span",
+    `platform-card__action${href ? " platform-card__action--link" : code ? " platform-card__action--copy" : ""}`,
     `${platform.actionLabel}${href ? " →" : ""}`,
   );
   if (href) {
@@ -46,6 +48,21 @@ function renderPlatformCard(platform) {
     action.target = "_blank";
     action.rel = "noopener noreferrer";
     action.setAttribute("aria-label", `${platform.actionLabel}（新窗口）`);
+  } else if (code) {
+    action.type = "button";
+    action.setAttribute("aria-live", "polite");
+    action.addEventListener("click", async () => {
+      try {
+        if (!navigator.clipboard?.writeText) throw new Error("Clipboard unavailable");
+        await navigator.clipboard.writeText(code);
+        action.textContent = "已复制，打开京东 App";
+      } catch {
+        action.textContent = "复制失败，请展开步骤手动复制";
+      }
+      window.setTimeout(() => {
+        action.textContent = platform.actionLabel;
+      }, 3000);
+    });
   }
 
   const guide = document.createElement("details");
