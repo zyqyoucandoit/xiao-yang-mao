@@ -8,9 +8,22 @@ import {
 } from "../platforms.js";
 import worker from "../dist/server/index.js";
 
-test("首版分类与平台清单保持完整", () => {
-  assert.deepEqual(categories.map((item) => item.id), ["food", "shopping", "travel"]);
-  assert.equal(platforms.length, 9);
+test("新版分类、平台与省钱步骤保持完整", () => {
+  assert.deepEqual(categories.map((item) => item.id), ["food", "local", "shopping"]);
+  assert.equal(platforms.length, 8);
+  assert.equal(categories.some((item) => item.id === "travel"), false);
+  assert.equal(platforms.some((item) => item.category === "travel"), false);
+  assert.equal(
+    platforms.every(
+      (item) =>
+        Array.isArray(item.tips) &&
+        item.tips.length >= 3 &&
+        item.tips.every((tip) => typeof tip === "string" && tip.length > 0) &&
+        typeof item.notice === "string" &&
+        item.notice.length > 0,
+    ),
+    true,
+  );
   assert.equal(
     platforms.every((item) => item.href === null || getHttpsHref(item.href) !== null),
     true,
@@ -95,9 +108,10 @@ test("站点外壳与 PWA 资源可以由 Worker 提供", async () => {
   const appSource = await (
     await worker.fetch(new Request("https://example.test/app.js"))
   ).text();
-  assert.match(appSource, /document\.createElement\(href \? "a" : "button"\)/);
-  assert.match(appSource, /card\.disabled = true/);
-  assert.match(appSource, /card\.rel = "noopener noreferrer"/);
+  assert.match(appSource, /document\.createElement\("article"\)/);
+  assert.match(appSource, /document\.createElement\("details"\)/);
+  assert.match(appSource, /action\.target = "_blank"/);
+  assert.match(appSource, /action\.rel = "noopener noreferrer"/);
 
   const serviceWorker = await (
     await worker.fetch(new Request("https://example.test/sw.js"))

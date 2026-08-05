@@ -12,21 +12,11 @@ function makeTextElement(tagName, className, text) {
 
 function renderPlatformCard(platform) {
   const href = getHttpsHref(platform.href);
-  const card = document.createElement(href ? "a" : "button");
+  const card = document.createElement("article");
 
   card.className = `platform-card${href ? " platform-card--ready" : " platform-card--pending"}`;
   card.style.setProperty("--card-accent", platform.accent);
-
-  if (href) {
-    card.href = href;
-    card.target = "_blank";
-    card.rel = "noopener noreferrer";
-    card.setAttribute("aria-label", `打开${platform.name}优惠页面（新窗口）`);
-  } else {
-    card.type = "button";
-    card.disabled = true;
-    card.setAttribute("aria-label", `${platform.name}优惠链接待添加`);
-  }
+  card.setAttribute("aria-labelledby", `${platform.id}-name`);
 
   const cardTop = document.createElement("span");
   cardTop.className = "platform-card__top";
@@ -36,23 +26,40 @@ function renderPlatformCard(platform) {
   const status = makeTextElement(
     "span",
     `platform-card__status${href ? " platform-card__status--ready" : ""}`,
-    href ? "链接可用" : "待添加链接",
+    href ? "官方入口" : "App 内入口",
   );
   cardTop.append(icon, status);
 
   const copy = document.createElement("span");
   copy.className = "platform-card__copy";
-  copy.append(
-    makeTextElement("span", "platform-card__name", platform.name),
-    makeTextElement("span", "platform-card__description", platform.description),
-  );
+  const name = makeTextElement("span", "platform-card__name", platform.name);
+  name.id = `${platform.id}-name`;
+  copy.append(name, makeTextElement("span", "platform-card__description", platform.description));
 
   const action = makeTextElement(
-    "span",
-    "platform-card__action",
-    href ? "前往查看优惠 →" : "链接补充后即可使用",
+    href ? "a" : "span",
+    `platform-card__action${href ? " platform-card__action--link" : ""}`,
+    `${platform.actionLabel}${href ? " →" : ""}`,
   );
-  card.append(cardTop, copy, action);
+  if (href) {
+    action.href = href;
+    action.target = "_blank";
+    action.rel = "noopener noreferrer";
+    action.setAttribute("aria-label", `${platform.actionLabel}（新窗口）`);
+  }
+
+  const guide = document.createElement("details");
+  guide.className = "saving-guide";
+  const summary = makeTextElement("summary", "saving-guide__summary", "查看省钱步骤");
+  const steps = document.createElement("ol");
+  steps.className = "saving-guide__steps";
+  for (const tip of platform.tips) {
+    steps.append(makeTextElement("li", "", tip));
+  }
+  const notice = makeTextElement("p", "saving-guide__notice", platform.notice);
+  guide.append(summary, steps, notice);
+
+  card.append(cardTop, copy, action, guide);
   return card;
 }
 
