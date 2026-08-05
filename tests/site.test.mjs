@@ -10,7 +10,7 @@ import worker from "../dist/server/index.js";
 
 test("新版分类、平台与省钱步骤保持完整", () => {
   assert.deepEqual(categories.map((item) => item.id), ["food", "local", "shopping"]);
-  assert.equal(platforms.length, 8);
+  assert.equal(platforms.length, 10);
   assert.equal(categories.some((item) => item.id === "travel"), false);
   assert.equal(platforms.some((item) => item.category === "travel"), false);
   assert.equal(
@@ -26,6 +26,21 @@ test("新版分类、平台与省钱步骤保持完整", () => {
   );
   assert.equal(
     platforms.every((item) => item.href === null || getHttpsHref(item.href) !== null),
+    true,
+  );
+
+  const requestedLinkedIds = [
+    "meituan-allowance",
+    "alipay-special-deals",
+    "meituan-group-buy",
+    "taobao-signin",
+    "pinduoduo",
+  ];
+  assert.equal(
+    requestedLinkedIds.every((id) => {
+      const item = platforms.find((platform) => platform.id === id);
+      return item && getHttpsHref(item.href) !== null;
+    }),
     true,
   );
 });
