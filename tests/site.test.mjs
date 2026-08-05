@@ -170,14 +170,31 @@ test("站点外壳与 PWA 资源可以由 Worker 提供", async () => {
     await worker.fetch(new Request("https://example.test/app.js"))
   ).text();
   assert.match(appSource, /document\.createElement\("article"\)/);
+  assert.match(appSource, /makeTextElement\("h3", "platform-card__name"/);
   assert.match(appSource, /document\.createElement\("details"\)/);
+  assert.match(appSource, /platform-card__actions--split/);
+  assert.match(appSource, /summary\.setAttribute\("aria-label"/);
   assert.match(appSource, /action\.target = "_blank"/);
   assert.match(appSource, /action\.rel = "noopener noreferrer"/);
   assert.match(appSource, /navigator\.clipboard\?\.writeText/);
   assert.match(appSource, /window\.location\.href = appHref/);
   assert.match(appSource, /event\.preventDefault\(\)/);
-  assert.match(appSource, /未打开？访问淘宝网页版/);
+  assert.match(appSource, /"网页"/);
   assert.doesNotMatch(appSource, /visibilitychange/);
+
+  const styles = await (
+    await worker.fetch(new Request("https://example.test/styles.css"))
+  ).text();
+  assert.match(styles, /grid-auto-rows:\s*1fr/);
+  assert.match(styles, /align-items:\s*stretch/);
+  assert.match(styles, /grid-template-columns:\s*repeat\(2, minmax\(0, 1fr\)\)/);
+  assert.match(styles, /grid-template-columns:\s*repeat\(3, minmax\(0, 1fr\)\)/);
+  assert.match(styles, /grid-template-columns:\s*repeat\(4, minmax\(0, 1fr\)\)/);
+  assert.match(styles, /grid-template-columns:\s*minmax\(0, 1fr\)/);
+  assert.match(styles, /height:\s*56px/);
+  assert.match(styles, /\.skip-link\s*\{[\s\S]*?min-height:\s*48px/);
+  assert.match(styles, /\.category-nav__link\s*\{[\s\S]*?min-height:\s*48px/);
+  assert.match(styles, /\.saving-guide__summary\s*\{[\s\S]*?min-height:\s*48px/);
 
   const serviceWorker = await (
     await worker.fetch(new Request("https://example.test/sw.js"))

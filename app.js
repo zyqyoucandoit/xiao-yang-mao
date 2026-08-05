@@ -31,7 +31,7 @@ function renderPlatformCard(platform) {
   card.style.setProperty("--card-accent", platform.accent);
   card.setAttribute("aria-labelledby", `${platform.id}-name`);
 
-  const cardTop = document.createElement("span");
+  const cardTop = document.createElement("div");
   cardTop.className = "platform-card__top";
 
   const icon = makeTextElement("span", "platform-card__icon", platform.monogram);
@@ -43,11 +43,11 @@ function renderPlatformCard(platform) {
   );
   cardTop.append(icon, status);
 
-  const copy = document.createElement("span");
+  const copy = document.createElement("div");
   copy.className = "platform-card__copy";
-  const name = makeTextElement("span", "platform-card__name", platform.name);
+  const name = makeTextElement("h3", "platform-card__name", platform.name);
   name.id = `${platform.id}-name`;
-  copy.append(name, makeTextElement("span", "platform-card__description", platform.description));
+  copy.append(name, makeTextElement("p", "platform-card__description", platform.description));
 
   const action = makeTextElement(
     appHref || href ? "a" : code ? "button" : "span",
@@ -56,7 +56,7 @@ function renderPlatformCard(platform) {
   );
   if (appHref) {
     action.href = href;
-    action.setAttribute("aria-label", platform.actionLabel);
+    action.setAttribute("aria-label", `${platform.name}：打开淘宝 App 首页`);
     action.addEventListener("click", (event) => {
       if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
       event.preventDefault();
@@ -84,22 +84,27 @@ function renderPlatformCard(platform) {
     });
   }
 
-  let webFallback = null;
+  const actions = document.createElement("div");
+  actions.className = `platform-card__actions${appHref && href ? " platform-card__actions--split" : ""}`;
+  actions.append(action);
+
   if (appHref && href) {
-    webFallback = makeTextElement(
+    const webFallback = makeTextElement(
       "a",
       "platform-card__fallback",
-      "未打开？访问淘宝网页版",
+      "网页",
     );
     webFallback.href = href;
     webFallback.target = "_blank";
     webFallback.rel = "noopener noreferrer";
-    webFallback.setAttribute("aria-label", "未能打开淘宝 App，改为在新窗口访问淘宝网页版");
+    webFallback.setAttribute("aria-label", `${platform.name}：在新窗口访问淘宝网页版`);
+    actions.append(webFallback);
   }
 
   const guide = document.createElement("details");
   guide.className = "saving-guide";
   const summary = makeTextElement("summary", "saving-guide__summary", "查看省钱步骤");
+  summary.setAttribute("aria-label", `查看${platform.name}省钱步骤`);
   const steps = document.createElement("ol");
   steps.className = "saving-guide__steps";
   for (const tip of platform.tips) {
@@ -108,9 +113,7 @@ function renderPlatformCard(platform) {
   const notice = makeTextElement("p", "saving-guide__notice", platform.notice);
   guide.append(summary, steps, notice);
 
-  card.append(cardTop, copy, action);
-  if (webFallback) card.append(webFallback);
-  card.append(guide);
+  card.append(cardTop, copy, actions, guide);
   return card;
 }
 

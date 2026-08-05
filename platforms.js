@@ -164,7 +164,7 @@ export const platforms = [
     description: "打开截图中的淘宝首页，再点“红包签到”",
     href: "https://m.taobao.com/",
     appHref: "taobao://m.taobao.com",
-    actionLabel: "打开淘宝 App 首页",
+    actionLabel: "打开淘宝 App",
     accent: "#ffe2c9",
     tips: [
       "点击按钮直接唤起淘宝 App 首页，再点截图中的“红包签到”。",
@@ -172,7 +172,7 @@ export const platforms = [
       "领取后查看红包有效期、使用门槛和适用品类。",
       "下单结算前确认红包已经勾选，不要为了凑门槛多买不需要的商品。",
     ],
-    notice: "淘宝可能恢复上次打开的位置，无法保证每次都停在“推荐”标签；若未安装或没有成功打开 App，请点卡片下方的淘宝网页版入口。",
+    notice: "淘宝可能恢复上次打开的位置，无法保证每次都停在“推荐”标签；若未安装或没有成功打开 App，请点操作区右侧的“网页”。",
   },
   {
     id: "taobao-seckill",
@@ -182,7 +182,7 @@ export const platforms = [
     description: "打开淘宝首页，再从“淘宝秒杀”进入当前场次",
     href: "https://m.taobao.com/",
     appHref: "taobao://m.taobao.com",
-    actionLabel: "打开淘宝 App 首页",
+    actionLabel: "打开淘宝 App",
     accent: "#ffd8c4",
     tips: [
       "点击按钮唤起淘宝 App 首页，再点截图中的“淘宝秒杀”。",
