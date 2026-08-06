@@ -155,6 +155,42 @@ test("只接受无凭据的绝对 HTTPS 链接", () => {
   assert.equal(getTrustedAppHref("javascript:alert(1)"), null);
 });
 
+test("云端管理接口在数据库不可用时只读回退，且不接受离线写入", async () => {
+  const read = await worker.fetch(new Request("https://example.test/api/entries"));
+  assert.equal(read.status, 200);
+  assert.equal(read.headers.get("cache-control"), "no-store, max-age=0");
+  const payload = await read.json();
+  assert.equal(payload.source, "fallback");
+  assert.equal(payload.entries.length, 14);
+  assert.equal(payload.staleCount, null);
+
+  const write = await worker.fetch(new Request("https://example.test/api/entries", {
+    method: "POST",
+    headers: { Origin: "https://example.test", "Content-Type": "application/json" },
+    body: JSON.stringify({ name: "测试入口" }),
+  }));
+  assert.equal(write.status, 503);
+});
+
+test("数据库迁移、管理页面和 Service Worker 均包含云端维护所需保护", async () => {
+  const migration = await readFile(new URL("../drizzle/0000_black_lake.sql", import.meta.url), "utf8");
+  assert.match(migration, /CREATE TABLE `entries`/);
+  assert.match(migration, /entries_category_enabled_sort_idx/);
+  assert.match(migration, /entries_last_verified_at_idx/);
+
+  const html = await (await worker.fetch(new Request("https://example.test/"))).text();
+  assert.match(html, /id="manage-link"/);
+  assert.match(html, /id="maintenance-count"/);
+  const appSource = await (await worker.fetch(new Request("https://example.test/app.js"))).text();
+  assert.match(appSource, /#manage/);
+  assert.match(appSource, /\/api\/entries/);
+  assert.match(appSource, /managerRequestAvailable/);
+  assert.match(appSource, /platform\.category !== "shopping"/);
+  const serviceWorker = await (await worker.fetch(new Request("https://example.test/sw.js"))).text();
+  assert.match(serviceWorker, /url\.pathname\.startsWith\("\/api\/"\)/);
+  assert.match(serviceWorker, /xiaoyangmao-shell-v10/);
+});
+
 test("站点外壳与 PWA 资源可以由 Worker 提供", async () => {
   for (const pathname of [
     "/",

@@ -9,8 +9,13 @@
   "scripts": {
     "dev": "node dev.mjs",
     "build": "node build.mjs",
+    "db:generate": "drizzle-kit generate",
     "start": "node dev.mjs",
     "test": "node build.mjs && node --test tests/site.test.mjs"
   },
-  "type": "module"
+  "type": "module",
+  "devDependencies": {
+    "drizzle-kit": "^0.31.10",
+    "drizzle-orm": "^0.45.2"
+  }
 }

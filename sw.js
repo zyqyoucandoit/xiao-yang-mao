@@ -1,5 +1,5 @@
-const SHELL_CACHE = "xiaoyangmao-shell-v9";
-const ASSET_CACHE = "xiaoyangmao-assets-v9";
+const SHELL_CACHE = "xiaoyangmao-shell-v10";
+const ASSET_CACHE = "xiaoyangmao-assets-v10";
 const NETWORK_FIRST_ASSETS = new Set([
   "/styles.css",
   "/platforms.js",
@@ -79,6 +79,8 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(request.url);
   if (url.origin !== self.location.origin || url.pathname === "/sw.js") return;
+
+  if (url.pathname.startsWith("/api/")) return;
 
   if (request.mode === "navigate") {
     event.respondWith(networkFirst(request));
