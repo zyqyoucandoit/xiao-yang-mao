@@ -24,6 +24,8 @@ function renderPlatformCard(platform) {
   const href = getHttpsHref(platform.href);
   const appHref = href ? getTrustedAppHref(platform.appHref) : null;
   const code = typeof platform.code === "string" && platform.code.trim() ? platform.code : null;
+  const showCardGuide = platform.category !== "shopping";
+  const showWebFallback = Boolean(appHref && href && showCardGuide);
   const isReady = Boolean(appHref || href || code);
   const card = document.createElement("article");
 
@@ -76,7 +78,7 @@ function renderPlatformCard(platform) {
         await navigator.clipboard.writeText(code);
         action.textContent = "已复制，打开京东 App";
       } catch {
-        action.textContent = "复制失败，请展开步骤手动复制";
+        action.textContent = "复制失败，请在浏览器中重试";
       }
       window.setTimeout(() => {
         action.textContent = platform.actionLabel;
@@ -85,10 +87,10 @@ function renderPlatformCard(platform) {
   }
 
   const actions = document.createElement("div");
-  actions.className = `platform-card__actions${appHref && href ? " platform-card__actions--split" : ""}`;
+  actions.className = `platform-card__actions${showWebFallback ? " platform-card__actions--split" : ""}`;
   actions.append(action);
 
-  if (appHref && href) {
+  if (showWebFallback) {
     const webFallback = makeTextElement(
       "a",
       "platform-card__fallback",
@@ -101,19 +103,23 @@ function renderPlatformCard(platform) {
     actions.append(webFallback);
   }
 
-  const guide = document.createElement("details");
-  guide.className = "saving-guide";
-  const summary = makeTextElement("summary", "saving-guide__summary", "查看省钱步骤");
-  summary.setAttribute("aria-label", `查看${platform.name}省钱步骤`);
-  const steps = document.createElement("ol");
-  steps.className = "saving-guide__steps";
-  for (const tip of platform.tips) {
-    steps.append(makeTextElement("li", "", tip));
-  }
-  const notice = makeTextElement("p", "saving-guide__notice", platform.notice);
-  guide.append(summary, steps, notice);
+  card.append(cardTop, copy, actions);
 
-  card.append(cardTop, copy, actions, guide);
+  if (showCardGuide) {
+    const guide = document.createElement("details");
+    guide.className = "saving-guide";
+    const summary = makeTextElement("summary", "saving-guide__summary", "查看省钱步骤");
+    summary.setAttribute("aria-label", `查看${platform.name}省钱步骤`);
+    const steps = document.createElement("ol");
+    steps.className = "saving-guide__steps";
+    for (const tip of platform.tips) {
+      steps.append(makeTextElement("li", "", tip));
+    }
+    const notice = makeTextElement("p", "saving-guide__notice", platform.notice);
+    guide.append(summary, steps, notice);
+    card.append(guide);
+  }
+
   return card;
 }
 

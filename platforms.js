@@ -15,7 +15,7 @@ export const categories = [
     id: "shopping",
     title: "网购省钱",
     eyebrow: "买得划算",
-    description: "签到红包、限时秒杀与购物券叠加步骤",
+    description: "签到红包、限时秒杀与购物券常用入口",
   },
 ];
 

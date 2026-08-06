@@ -175,6 +175,9 @@ test("站点外壳与 PWA 资源可以由 Worker 提供", async () => {
   const html = await (await worker.fetch(new Request("https://example.test/"))).text();
   assert.match(html, /<html lang="zh-CN">/);
   assert.match(html, /小羊毛仅整理跳转入口/);
+  assert.doesNotMatch(html, /把零散的优惠入口和省钱步骤收进一个口袋/);
+  assert.doesNotMatch(html, /先领券，再比价，最后看实付/);
+  assert.doesNotMatch(html, /status-note/);
   assert.match(html, /<meta name="apple-mobile-web-app-capable" content="yes"/);
   assert.match(html, /<link rel="apple-touch-icon" href="\/icons\/apple-touch-icon\.png" sizes="180x180"/);
 
@@ -201,6 +204,8 @@ test("站点外壳与 PWA 资源可以由 Worker 提供", async () => {
   assert.match(appSource, /document\.createElement\("article"\)/);
   assert.match(appSource, /makeTextElement\("h3", "platform-card__name"/);
   assert.match(appSource, /document\.createElement\("details"\)/);
+  assert.match(appSource, /const showCardGuide = platform\.category !== "shopping"/);
+  assert.match(appSource, /const showWebFallback = Boolean\(appHref && href && showCardGuide\)/);
   assert.match(appSource, /platform-card__actions--split/);
   assert.match(appSource, /summary\.setAttribute\("aria-label"/);
   assert.match(appSource, /action\.target = "_blank"/);
@@ -216,6 +221,8 @@ test("站点外壳与 PWA 资源可以由 Worker 提供", async () => {
   const styles = await (
     await worker.fetch(new Request("https://example.test/styles.css"))
   ).text();
+  assert.doesNotMatch(styles, /\.hero__copy/);
+  assert.doesNotMatch(styles, /\.status-note/);
   assert.match(styles, /grid-auto-rows:\s*1fr/);
   assert.match(styles, /align-items:\s*stretch/);
   assert.match(styles, /grid-template-columns:\s*repeat\(2, minmax\(0, 1fr\)\)/);
