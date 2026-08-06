@@ -170,6 +170,9 @@ function updateInstallHint(hasInstallPrompt = false) {
     isStandalone,
   });
 
+  installBadge.hidden = true;
+  installTip.hidden = true;
+
   if (installState === "available") {
     installBadge.textContent = "＋ 可添加到桌面";
     installBadge.hidden = false;
@@ -177,14 +180,12 @@ function updateInstallHint(hasInstallPrompt = false) {
       ? "安装提示：点击浏览器的分享按钮，再选择“添加到主屏幕”。外部优惠页面仍需联网访问。"
       : "安装提示：在浏览器菜单中选择“安装应用”或“添加到主屏幕”。外部优惠页面仍需联网访问。";
     installTip.hidden = false;
-  } else if (installState === "installed") {
-    installBadge.textContent = "桌面模式";
-    installBadge.hidden = false;
   }
 }
 
 updateInstallHint();
 window.addEventListener("beforeinstallprompt", () => updateInstallHint(true));
+window.addEventListener("appinstalled", () => updateInstallHint(false));
 
 const canUseServiceWorker = isSecure && hasServiceWorker;
 

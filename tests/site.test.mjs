@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
 import {
   categories,
@@ -127,6 +128,22 @@ test("安装提示只在合适的运行环境显示", () => {
   );
 });
 
+test("手机桌面图标尺寸符合 Android 与 iOS 要求", async () => {
+  const expectedSizes = new Map([
+    ["icon-192.png", [192, 192]],
+    ["icon-512.png", [512, 512]],
+    ["icon-maskable-512.png", [512, 512]],
+    ["apple-touch-icon.png", [180, 180]],
+  ]);
+
+  for (const [filename, [width, height]] of expectedSizes) {
+    const png = await readFile(new URL(`../public/icons/${filename}`, import.meta.url));
+    assert.equal(png.subarray(1, 4).toString("ascii"), "PNG", filename);
+    assert.equal(png.readUInt32BE(16), width, filename);
+    assert.equal(png.readUInt32BE(20), height, filename);
+  }
+});
+
 test("只接受无凭据的绝对 HTTPS 链接", () => {
   assert.equal(getHttpsHref("https://example.com/coupon"), "https://example.com/coupon");
   assert.equal(getHttpsHref("http://example.com"), null);
@@ -158,13 +175,25 @@ test("站点外壳与 PWA 资源可以由 Worker 提供", async () => {
   const html = await (await worker.fetch(new Request("https://example.test/"))).text();
   assert.match(html, /<html lang="zh-CN">/);
   assert.match(html, /小羊毛仅整理跳转入口/);
+  assert.match(html, /<meta name="apple-mobile-web-app-capable" content="yes"/);
+  assert.match(html, /<link rel="apple-touch-icon" href="\/icons\/apple-touch-icon\.png" sizes="180x180"/);
 
   const manifest = await (
     await worker.fetch(new Request("https://example.test/manifest.webmanifest"))
   ).json();
   assert.equal(manifest.name, "小羊毛");
+  assert.equal(manifest.short_name, "小羊毛");
+  assert.equal(manifest.id, "/");
+  assert.equal(manifest.start_url, "/");
+  assert.equal(manifest.scope, "/");
   assert.equal(manifest.display, "standalone");
+  assert.equal(manifest.orientation, "portrait-primary");
+  assert.equal(manifest.background_color, "#fff8f0");
+  assert.equal(manifest.theme_color, "#b45309");
   assert.equal(manifest.icons.length, 3);
+  assert.equal(manifest.icons.some((icon) => icon.sizes === "192x192"), true);
+  assert.equal(manifest.icons.some((icon) => icon.sizes === "512x512" && icon.purpose === "any"), true);
+  assert.equal(manifest.icons.some((icon) => icon.sizes === "512x512" && icon.purpose === "maskable"), true);
 
   const appSource = await (
     await worker.fetch(new Request("https://example.test/app.js"))
@@ -180,6 +209,8 @@ test("站点外壳与 PWA 资源可以由 Worker 提供", async () => {
   assert.match(appSource, /window\.location\.href = appHref/);
   assert.match(appSource, /event\.preventDefault\(\)/);
   assert.match(appSource, /"网页"/);
+  assert.match(appSource, /window\.addEventListener\("appinstalled"/);
+  assert.doesNotMatch(appSource, /桌面模式/);
   assert.doesNotMatch(appSource, /visibilitychange/);
 
   const styles = await (
