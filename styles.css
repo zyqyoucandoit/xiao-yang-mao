@@ -648,6 +648,16 @@ h1 {
   padding: 24px 0 40px;
 }
 
+.manager-login {
+  min-height: 360px;
+  align-content: center;
+}
+
+.manager-login__card {
+  width: min(100%, 520px);
+  margin-inline: auto;
+}
+
 .manager-heading,
 .manager-editor,
 .manager-row {

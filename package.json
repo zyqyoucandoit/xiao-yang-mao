@@ -10,6 +10,10 @@
     "dev": "node dev.mjs",
     "build": "node build.mjs",
     "db:generate": "drizzle-kit generate",
+    "db:migrate": "node scripts/migrate-neon.mjs",
+    "db:export": "node scripts/export-entries.mjs",
+    "db:import": "node scripts/import-entries.mjs",
+    "admin:secrets": "node scripts/generate-admin-secrets.mjs",
     "start": "node dev.mjs",
     "test": "node build.mjs && node --test tests/site.test.mjs"
   },
@@ -17,5 +21,8 @@
   "devDependencies": {
     "drizzle-kit": "^0.31.10",
     "drizzle-orm": "^0.45.2"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^1.1.0"
   }
 }

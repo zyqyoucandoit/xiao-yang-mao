@@ -7,6 +7,7 @@ const manageLink = document.querySelector("#manage-link");
 const palette = ["#ffd866", "#ffd9d1", "#dceaff", "#e7ddff", "#ffe0a6", "#ffd8dc", "#d9f2df", "#ffe2c9"];
 
 let state = { entries: fallbackEntries(), staleCount: null, source: "fallback" };
+let authState = { checked: false, authenticated: false };
 
 function fallbackEntries() {
   return platforms.map((entry, index) => ({
@@ -178,7 +179,7 @@ function statusText(entry) {
   return stale ? "待确认" : `已确认 ${date.toLocaleDateString("zh-CN")}`;
 }
 
-function managerRequestAvailable() { return navigator.onLine && state.source === "cloud"; }
+function managerRequestAvailable() { return navigator.onLine && state.source === "cloud" && authState.authenticated; }
 
 async function requestApi(path, options = {}) {
   if (!managerRequestAvailable()) throw new Error("当前离线或云端暂不可用，无法保存修改。");
@@ -186,6 +187,16 @@ async function requestApi(path, options = {}) {
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(payload.error || "保存失败，请稍后重试。");
   return payload;
+}
+
+async function refreshSession() {
+  try {
+    const response = await fetch("/api/auth/session", { credentials: "same-origin", cache: "no-store" });
+    const payload = await response.json();
+    authState = { checked: true, authenticated: payload.authenticated === true };
+  } catch {
+    authState = { checked: true, authenticated: false };
+  }
 }
 
 async function refreshEntries(includeInactive = location.hash === "#manage") {
@@ -199,6 +210,58 @@ async function refreshEntries(includeInactive = location.hash === "#manage") {
     state = { entries: fallbackEntries(), staleCount: null, source: "fallback" };
   }
   updateMaintenanceCount();
+}
+
+function renderLogin(message = "") {
+  main.replaceChildren();
+  const form = document.createElement("form");
+  form.className = "manager manager-login";
+  form.setAttribute("aria-labelledby", "manager-login-title");
+  const card = document.createElement("div");
+  card.className = "manager-heading manager-login__card";
+  card.append(makeTextElement("h2", "manager-heading__title", "管理入口"));
+  card.querySelector("h2").id = "manager-login-title";
+  card.append(makeTextElement("p", "manager-heading__description", "请输入独立管理密码，维护内容只对你本人开放。"));
+  if (message) {
+    const feedback = makeTextElement("p", "manager-feedback manager-feedback--page", message);
+    feedback.setAttribute("aria-live", "polite");
+    card.append(feedback);
+  }
+  const password = createInput("password", "password");
+  password.autocomplete = "current-password";
+  password.required = true;
+  password.minLength = 12;
+  card.append(inputField("管理密码", password, "密码不会写入浏览器本地存储。"));
+  const actions = document.createElement("div");
+  actions.className = "manager-toolbar";
+  const submit = makeTextElement("button", "manager-primary", "登录管理");
+  submit.type = "submit";
+  const back = makeButton("返回首页", "manager-secondary", () => { location.hash = "#food"; });
+  actions.append(submit, back);
+  card.append(actions);
+  form.append(card);
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    submit.disabled = true;
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        credentials: "same-origin",
+        cache: "no-store",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: password.value }),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.error || "登录失败，请稍后重试。");
+      authState = { checked: true, authenticated: true };
+      await refreshEntries(true);
+      renderManage("登录成功。");
+    } catch (error) {
+      renderLogin(error instanceof Error ? error.message : "登录失败，请稍后重试。");
+    }
+  });
+  main.append(form);
+  password.focus();
 }
 
 function renderEditor(entry = null, message = "") {
@@ -282,7 +345,15 @@ function renderManage(message = "") {
   heading.append(title, description); section.append(heading);
   if (message) { const feedback = makeTextElement("p", "manager-feedback manager-feedback--page", message); feedback.setAttribute("aria-live", "polite"); section.append(feedback); }
   const toolbar = document.createElement("div"); toolbar.className = "manager-toolbar";
-  toolbar.append(makeButton("新增入口", "manager-primary", () => renderEditor(), !managerRequestAvailable()), makeButton("返回首页", "manager-secondary", () => { location.hash = "#food"; }, false));
+  toolbar.append(
+    makeButton("新增入口", "manager-primary", () => renderEditor(), !managerRequestAvailable()),
+    makeButton("退出管理", "manager-secondary", async () => {
+      try { await fetch("/api/auth/logout", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, cache: "no-store" }); } catch {}
+      authState = { checked: true, authenticated: false };
+      renderLogin("已退出管理。");
+    }, false),
+    makeButton("返回首页", "manager-secondary", () => { location.hash = "#food"; }, false),
+  );
   section.append(toolbar);
   const list = document.createElement("div"); list.className = "manager-list";
   for (const entry of state.entries) list.append(renderManagerRow(entry));
@@ -291,14 +362,27 @@ function renderManage(message = "") {
 
 function renderRoute() {
   renderNav();
-  if (location.hash === "#manage") renderManage();
+  if (location.hash === "#manage") {
+    if (!authState.authenticated) renderLogin();
+    else renderManage();
+  }
   else renderHome();
 }
 
-async function boot() { await refreshEntries(location.hash === "#manage"); renderRoute(); }
+async function loadRoute() {
+  if (location.hash === "#manage") {
+    await refreshSession();
+    if (authState.authenticated) await refreshEntries(true);
+  } else {
+    await refreshEntries(false);
+  }
+  renderRoute();
+}
 
-window.addEventListener("hashchange", () => { refreshEntries(location.hash === "#manage").finally(renderRoute); });
-window.addEventListener("online", () => { refreshEntries(location.hash === "#manage").finally(renderRoute); });
+async function boot() { await loadRoute(); }
+
+window.addEventListener("hashchange", () => { loadRoute(); });
+window.addEventListener("online", () => { loadRoute(); });
 window.addEventListener("offline", () => { state = { ...state, source: "fallback", staleCount: null }; updateMaintenanceCount(); if (location.hash === "#manage") renderManage(); });
 
 const isSecure = location.protocol === "https:" || ["localhost", "127.0.0.1"].includes(location.hostname);

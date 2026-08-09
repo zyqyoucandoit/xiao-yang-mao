@@ -1,26 +1,40 @@
 # 小羊毛
 
-小羊毛是一个手机优先、仅个人使用的优惠入口 PWA。首页按外卖省钱、到店团购、网购省钱展示入口；可添加到手机桌面后像 App 一样打开。
+小羊毛是一个手机优先的优惠入口 PWA，按外卖省钱、到店团购和网购省钱整理常用入口。首页公开展示启用中的入口，`#manage` 管理页使用独立密码维护云端数据。
 
-## 日常维护
+## 运行方式
 
-打开首页底部的“管理入口”（`#manage`），即可在手机或电脑上：
+- 前端：原生 HTML、CSS、ES Modules JavaScript
+- 发布：GitHub `main` 分支自动部署到 Vercel Hobby
+- 数据库：Neon Serverless Postgres
+- API：Vercel Node.js Functions
+- 离线：Service Worker 只缓存本站静态资源，永不缓存 `/api/`
 
-- 新增、编辑入口的分类、名称、简介、HTTPS 链接、按钮文字与卡片颜色。
-- 暂停或恢复入口；暂停后的入口不会出现在首页。
-- 点击“已确认”记录一次检查时间；超过 30 天未确认的启用入口会显示为待维护。
+## 本地命令
 
-网购入口不会在首页显示省钱步骤或额外网页备用跳转。淘宝 App 唤起和京东口令属于内置高级类型，管理页只展示其状态，不允许添加任意 App Scheme。
+```bash
+npm install
+npm run dev          # http://127.0.0.1:4173/，未配置数据库时使用内置只读入口
+npm test             # 构建静态输出并运行回归测试
+npm run build        # 生成 Vercel outputDirectory=dist
+npm run db:migrate   # 执行 Neon 结构迁移
+npm run admin:secrets # 本地生成管理密码哈希与会话密钥
+npm run db:export    # 从旧站点导出入口（需要 CURRENT_SITE_URL/CURRENT_SITE_COOKIE）
+npm run db:import -- data/current-entries.json
+```
 
-入口记录保存在站点私有 D1 数据库；首次发布会从 `platforms.js` 自动迁入当前 14 个入口。`platforms.js` 同时是断网时的只读回退：首页仍能打开，但管理保存会禁用，直到网络和云端数据库恢复。
+## Vercel 环境变量
 
-## 安全规则
+在 Vercel Project Settings → Environment Variables 设置：
 
-普通跳转只接受完整的 HTTPS 地址，拒绝 HTTP、带账号密码的链接、脚本链接和自定义 App Scheme。外链以新窗口安全打开（`noopener noreferrer`）。
+- `DATABASE_URL`
+- `ADMIN_PASSWORD_HASH`
+- `SESSION_SECRET`
 
-## 开发
+不要把密码明文、数据库连接串、会话密钥、Cookie 或入口导出文件提交到公开 GitHub 仓库。
 
-- `npm run dev`：本地预览 `http://127.0.0.1:4173/`（本地为只读离线回退）。
-- `npm run db:generate`：根据 `db/schema.ts` 生成 D1 SQL 迁移。
-- `npm run build`：生成 Sites 部署输出。
-- `npm test`：构建并检查入口、安全校验、云端回退、PWA 与迁移文件。
+## 管理入口
+
+打开首页底部“管理入口”，输入独立管理密码后可以新增、编辑、暂停/恢复入口并标记已确认。启用入口超过 30 天未确认，或从未确认时会显示“待维护”数量。网购分类不会渲染省钱步骤或额外网页备用按钮。
+
+小羊毛仅整理跳转入口，与各平台无隶属或授权关系；优惠内容、领取资格和有效期以目标平台页面为准。
