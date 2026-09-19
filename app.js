@@ -145,7 +145,7 @@ function renderHome() {
     const title = makeTextElement("h2", "section-heading__title", category.title);
     title.id = `${category.id}-title`;
     headingCopy.append(eyebrow, title);
-    heading.append(headingCopy, makeTextElement("p", "section-heading__description", category.description));
+    heading.append(headingCopy);
     const grid = document.createElement("div");
     grid.className = "platform-grid";
     for (const platform of state.entries.filter((item) => item.enabled && item.category === category.id)) grid.append(renderPlatformCard(platform));
